@@ -1,0 +1,186 @@
+=========================================================================
+
+  CMS 404: Programming Languages  Fall 2007
+
+     Assignment #2  Induction/Recursion
+
+     Due Thursday, August 30, 2007  (electronic submissions by 6:30pm)
+
+=========================================================================
+
+
+The objective of this assignment is to help you understand the basics
+of ML function types and recursion by writing some very simple
+functions.  Remember to think about the structure of the data you are
+processing, and come up with the recursion template following the
+methods discussed in class before you start to code.
+
+1. [3 points] Write a function andalso_list of type bool list -> bool
+that takes an argument list l of booleans and uses the "andalso"
+operator to perform a logical and on the list items.
+
+Examples;
+- andalso_list [true,false,true];
+val it = false : bool
+- andalso_list [];
+val it = true : bool
+- andalso_list [true,true,true,true];
+val it = true : bool
+- andalso_list [true,true,true,true,false];
+val it = false : bool
+
+Notice that the function should return 'true' when applied to the
+empty list since, 'true' is the identity element for logical and
+(i.e., for any boolean b, b andalso true returns b).
+
+2. [3 points] Write a function swap_pairs of type 
+
+    ('a * 'b) list -> ('b * 'a) list 
+
+that takes a list l of pairs and returns
+a list that is like l except that all the pair components have been
+swapped.
+
+
+Examples:
+
+- swap_pairs (nil:(int*int) list);
+val it = [] : (int * int) list
+- swap_pairs [(3,2),(4,1),(7,9)];
+val it = [(2,3),(1,4),(9,7)] : (int * int) list
+- swap_pairs [("foo",2.9),("bar",11.7)];
+val it = [(2.9,"foo"),(11.7,"bar")] : (real * string) list
+
+
+3. [3 points] Write a function make_trips of type
+
+     'a list * 'b list * 'c list -> ('a * 'b * 'c) list
+
+that takes a tuple of three lists and returns a list of triplets
+formed from the corresponding items in each of the three lists
+(you may assume that the lists are of equal length).
+
+Examples:
+
+- make_trips([1,2,3],["a","b","c"],[true,false,true]);
+val it = [(1,"a",true),(2,"b",false),(3,"c",true)] : (int * string * bool) list
+- make_trips(nil: int list, nil: real list, nil: char list);
+val it = [] : (int * real * char) list
+- make_trips([["foo"],[],["bar","baz"]],[3,22,4],[(3,2),(1,1),(3,4)]);
+val it = [(["foo"],3,(3,2)),([],22,(1,1)),(["bar","baz"],4,(3,4))]
+  : (string list * int * (int * int)) list
+
+
+4. [4 points] Write a function fun_pipe of type
+
+      ('a -> 'a) list -> 'a -> 'a
+
+That takes a list of functions of type 'a -> 'a and creates a function
+that implements the composition of all the functions in the list (where
+the functions are applied from right to left (i.e., in reverse order)).
+
+Note: Don't panic on this one.  It sounds harder, but it is actually
+quite short.  Just think about it systematically.  Notice that the
+function should return the identify function when applied to the empty
+list since, since the identity function is the identity element for
+function composition (i.e., for any function f, f o id is equivalent
+to f).  Hint: 'o' will compose two functions together, look at section
+5.6.2 in the book for more information.
+
+Examples:
+
+- fun add3 x = x + 3;
+val add3 = fn : int -> int
+- fun add5 x = x + 5;
+val add5 = fn : int -> int
+- fun add7 x = x + 7;
+val add7 = fn : int -> int
+- val c = add3 o add5;
+val c = fn : int -> int
+- c 2;
+val it = 10 : int
+- fun sub7 x = x - 7;
+val sub7 = fn : int -> int
+- fun sub4 x = x - 4;
+val sub4 = fn : int -> int
+
+- val h = fun_pipe [add3,add5,sub4];
+val h = fn : int -> int
+- h 2;
+val it = 6 : int
+- fun j x = (fun_pipe  [fn (x,y) => (x,x)]) x;
+val j = fn : 'a * 'a -> 'a * 'a
+- j (2,3);
+val it = (2,2) : int * int
+- fun k n = (fun_pipe nil) n;
+val k = fn : 'a -> 'a
+- k 100;
+val it = 100 : int
+- val m = fun_pipe [sub4,sub7,(fn x=>x+1),fun_pipe [add3,add5]];
+val m = fn : int -> int
+- m 11;
+val it = 9 : int
+- m 54;
+val it = 52 : int
+
+5. [4 points] Write a curried function called inorder_insert of type
+
+  int list -> int -> int list
+
+that takes an ordered list of integers l and an argument n and inserts
+in the list so that the result list is still in order.  You may assume
+that the input list is always ordered correctly.
+
+Examples:
+
+- inorder_insert [1,3,5,7,9] 8;
+val it = [1,3,5,7,8,9] : int list
+- inorder_insert [1,3,5,7,9] 2;
+val it = [1,2,3,5,7,9] : int list
+- inorder_insert [1,3,5,7,9] 12;
+val it = [1,3,5,7,9,12] : int list
+- inorder_insert [1,3,5,7,9] 0;
+val it = [0,1,3,5,7,9] : int list
+
+
+6. [4 points] Write a higher-order polymorphic function 'remove_item' of type
+('a -> bool) * 'a list -> 'a list that takes a predicate p
+of type ('a -> bool) and a list l of type 'a list and returns
+a list l' that only contains the elements x of l such that p(x) 
+is false.  The elements of l' should be ordered as they were in
+l.
+
+Examples:
+
+- remove_item ((fn n => n > 4),[1,2,3,4,5,6,7]);
+val it = [1,2,3,4] : int list
+- remove_item ((fn l => length(l) > 2),[[1,2,3],[],[1],[2,3,4,5]]);
+val it = [[],[1]] : int list list
+
+
+7. [4 points] In this exercise you will write a function to process
+an 'int list list' --- that is, a list that contains lists of integers.
+Write a function called 'super_mult' that will take an 'int list list'
+l and compute the product of all the integers contains in the lists
+in l.  The super_mult function has type int list list -> int.
+
+Examples:
+
+- super_mult [[1,3,2],[2],[2,3]];
+val it = 72 : int
+- super_mult [[],[],[2]];
+val it = 2 : int
+- super_mult [];
+val it = 1 : int
+- super_mult [[]];
+val it = 1 : int
+- super_mult [[2],[2],[2]];
+val it = 8 : int
+
+
+NOTE: there are two levels of recursion here: recursion over the outer
+list, and recursion of the inner list.  Thus, you should actually
+write a helper function (the name doesn't matter) to recursively
+traverse each item in the inner list.
+
+

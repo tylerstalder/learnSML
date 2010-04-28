@@ -1,0 +1,113 @@
+2. [5 points] In this problem, you will write your first interpreter.
+This will be an interpreter for a simple language of real expressions.
+Here is a datatype declaration that gives syntax trees for the
+expressions in the language:
+
+datatype exp = Lit of real
+             | Plus  of exp * exp
+             | Times of exp * exp
+             | Power of exp * int;
+
+So we have literals, and additions, multiplication, and the power (for
+positive integer exponents) operation.  You may assume that the
+integer argument is always greater than or equal to zero in the power
+operation.
+
+Here are some example expression trees.
+
+val exp1 = Lit(5.2);
+val exp2 = Times(exp1,exp1);
+val exp3 = Power(Lit(5.0),2);
+val exp4 = Plus(Times(exp1,exp2),exp3);
+
+Write a interpreter for this language as a function
+
+   eval : exp -> real
+
+that returns the real value represented by the
+expression tree.  Hint: you may also find it helpful to write
+a helper function  power: real * int -> real that implements
+the power function.   For example,
+
+- power(5.0,2);
+val it = 25.0 : real
+
+Examples:
+
+- eval(exp1);
+val it = 5.2 : real
+- eval(exp2);
+val it = 27.04 : real
+- eval(exp3);
+val it = 25.0 : real
+- eval(exp4);
+val it = 165.608 : real
+
+
+Conclusion: an interpreter is just a recursive function that processes
+an tree representing the source program.
+
+
+3. [5 points] In this problem, you will write your first
+interpreter.  This will be an interpreter for a simple language
+of integer ring expressions.  An integer ring is represented
+as a tuple of 4 integers.
+
+Here is a datatype declaration
+that gives syntax trees for the expressions in the language:
+
+
+type ring = int * int * int * int;
+
+datatype ringexp = RotateLeft of ringexp
+                 | RotateRight of ringexp
+                 | Add of ringexp * ringexp
+                 | Lit of ring
+                 | MakeConstant of int;
+
+This intuition for each construct is as follows.
+  - RotateLeft takes a ring and rotates it one position to the left with
+    the first element in the ring wrapping around to the back.
+
+    For example, (1,2,3,4) --> (2,3,4,1)
+
+  - RotateRight takes a ring and rotates it one position to the ring with
+    the last element in the ring wrapping around to the front.
+
+    For example, (1,2,3,4) --> (4,1,2,3)
+
+  - Add takes two rings and adds them component wise.
+    For example, (1,2,3,4) and (4,3,2,3) --> (5,5,5,7)
+
+  - Lit creates a ring from a tuple of four integers.
+
+  - MakeConstant applied to an integer n creates a ring where all
+  for components have the value n.
+
+Here are some example expression trees.
+
+val rexp1 = Lit(1,2,3,4);
+val rexp2 = RotateLeft(RotateLeft(rexp1));
+val rexp3 = Add(rexp2,MakeConstant(5));
+val rexp4 = RotateRight(Add(rexp2,rexp3));
+
+Write a interpreter for this language as a function
+
+   eval_ring : ringexp -> ring
+
+that returns the ring value represented by the
+expression tree.
+
+Examples:
+
+- eval_ring(rexp1);
+val it = (1,2,3,4) : ring
+- eval_ring(rexp2);
+val it = (3,4,1,2) : ring
+- eval_ring(rexp3);
+val it = (8,9,6,7) : ring
+- eval_ring(rexp4);
+val it = (9,11,13,7) : ring
+
+Conclusion: Same as before, an interpreter is just a recursive
+function that processes a tree representing the source program.

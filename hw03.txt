@@ -1,0 +1,197 @@
+=========================================================================
+
+  CMS 404: Programming Languages  Fall 2007
+
+     Assignment #3  Induction/Recursion
+
+     Due Thursday, August 30, 2007  (electronic submissions by 6:30pm)
+
+=========================================================================
+
+
+The objective of this assignment is to help you understand the basics
+of ML function types and recursion by writing some very simple
+functions.  Remember to think about the structure of the data you are
+processing, and come up with the recursion template following the
+methods discussed in class before you start to code.
+
+
+The next two exercises involve implementing a 'table' -- a mapping
+between a set of 'keys' and 'values'.  We will use these functions
+throughout the rest of the course when implementing interpreters and
+compilers.  For example, a table can be used to implement an environment
+that binds variables (represented as SML strings) to values.
+
+A table will be implemented as a list of pairs.
+For example, [(key1,value1),...,(keyn,valuen)] represents the table
+
+ +--------------+
+ |key1  | value1|
+ +--------------+
+      ....
+ +--------------+
+ |keyn  | valuen|
+ +--------------+
+
+Thus, an empty is represented as an empty list. 
+
+- val empty_table = nil;
+
+1. [4 points] Write a polymorphic curried function called 'update_table'
+of type ''a -> 'b -> (''a * 'b) list -> (''a * 'b) list
+that will take a key k of type ''a and a value b of type 'b
+and a table t of type (''a * 'b) list and create a new table
+t' of type (''a * 'b) that is just like t except that the entry
+(k,v) has been added.  If k is already in the table, then
+v should replace the existing value bound to k.  The keys
+should be kept in the original order of entry.
+
+Hint: Don't make your solution function too complex. The ideal solution
+is fairly simple.
+
+Examples: using a table mapping strings to integers.
+
+  - val t1 = update_table "john" 5 empty_table;
+  val t1 = [("john",5)] : (string * int) list
+  - val t2 = update_table "mark" 12 t1;
+  val t2 = [("john",5),("mark",12)] : (string * int) list
+  - val t3 = update_table "john" 99 t2;
+  val t3 = [("john",99),("mark",12)] : (string * int) list
+  - val t4 = update_table "sam" 3 t3;
+  val t4 = [("john",99),("mark",12),("sam",3)] : (string * int) list
+
+
+3. [4 points] Write a polymorphic curried function called lookup_table
+of type ''a -> (''a * 'b) list -> 'b option that will take
+a key k of type ''a and a table t of type (''a * 'b) list and
+return the value v associated k in table t.
+
+You must handle the case where the key k is not in the table.
+However, because of typing restrictions you cannot return
+an error as a string e.g., "ERROR: key not found" because
+this would cause the function result type to be "string".
+
+To handle this, we use the special built ML datatype
+
+  datatype 'a option = SOME of 'a | NONE;
+
+This definition is built-in so there is no need to enter in
+your solution.  This datatype lets us tag the results of the lookup
+operation as either 'found' or 'not found'.  For example, if value
+v is associated with key k in the able we would return SOME(v).
+If the key k is not in the table, we would return NONE.
+
+Here are some examples using the option datatype.
+
+  - SOME(1);
+  val it = SOME 1 : int option
+  - NONE;
+  val it = NONE : 'a option
+  - if 1 < 2 then SOME(1) else NONE;
+  val it = SOME 1 : int option
+
+
+Finally, here are some examples of the lookup function.
+
+  - lookup_table "john" t4;
+  val it = SOME 99 : int option
+  - lookup_table "sam" t4;
+  val it = SOME 3 : int option
+  - lookup_table "jill" t4;
+  val it = NONE : int option
+
+
+NOTE: In your solution on this exercise, you may have a problem
+if you try to access the tuple components
+of (''a * 'b) using #1(e) and #2(e).  If you do it this way,
+ML will give a type inference error: it can tell 'e' will be a
+tuple of at least two components, but it can't tell if there
+are any other components (and it needs to be able to figure the
+exact # of components).
+
+There are two ways to fix this. 
+  (1) give an explicit type on the parameters so it will know that
+   the tuple has two components
+  (2) make the pattern matching more explicit.
+
+I prefer option (2) ... it makes the function easier to write as well.
+
+For example, my solution looks like this
+
+   fun lookup_table x nil          = .....
+     | lookup_table x ((x',v')::t) = .....
+                                         
+
+
+The remaining questions involve a datatype of binary trees where both the
+leaves and internal nodes contain data of type 'a.
+
+  datatype 'a tree = Leaf of 'a | Node of 'a tree * 'a * 'a tree;
+
+Here are some example trees:
+
+   - val tree1 = Leaf(3);
+   val tree1 = Leaf 3 : int tree
+   - val tree2 = Node(tree1,5,tree1);
+   val tree2 = Node (Leaf 3,5,Leaf 3) : int tree
+   - val tree3 = Node(tree2,10,tree1);
+   val tree3 = Node (Node (Leaf 3,5,Leaf 3),10,Leaf 3) : int tree
+   - val tree4 = Node(tree2,22,tree3);
+   val tree4 =
+     Node (Node (Leaf 3,5,Leaf 3),22,Node (Node (Leaf 3,5,Leaf 3),10,Leaf 3))
+     : int tree
+
+
+3. [4 points] Write a function called tree_swap_pairs that is analogous
+to the swap_pairs function for lists that you defined above.
+
+Examples:
+
+  - val t1 = Leaf ("foo",3);
+  val t1 = Leaf ("foo",3) : (string * int) tree
+  - val t2 = Leaf ("bar",7);
+  val t2 = Leaf ("bar",7) : (string * int) tree
+  - val t3 = Node (t1,("baz",12),t1);
+  val t3 = Node (Leaf ("foo",3),("baz",12),Leaf ("foo",3)) : (string * int) tree
+  - val t4 = Node (Leaf("boof",~1),("bletch",98),t3);
+  val t4 =
+    Node
+      (Leaf ("boof",~1),("bletch",98),
+       Node (Leaf ("foo",3),("baz",12),Leaf ("foo",3))) : (string * int) tree
+  - tree_swap_pairs t1;
+  val it = Leaf (3,"foo") : (int * string) tree
+  - tree_swap_pairs t2;
+  val it = Leaf (7,"bar") : (int * string) tree
+  - tree_swap_pairs t3;
+  val it = Node (Leaf (3,"foo"),(12,"baz"),Leaf (3,"foo")) : (int * string) tree
+  - tree_swap_pairs t4;
+  val it =
+    Node
+      (Leaf (~1,"boof"),(98,"bletch"),
+       Node (Leaf (3,"foo"),(12,"baz"),Leaf (3,"foo"))) : (int * string) tree
+ 
+
+4. [4 points]
+Write a curried higher-order polymorphic function called
+tree_map of type
+
+ 'a tree -> ('a -> 'b) -> 'b tree
+
+that is analogous to the map function on lists: it takes a
+an 'a tree and function f of type ('a -> 'b) and
+applies it to each data item of type 'a in a tree and a returns a tree
+of the same shape (but with possibly different data items).
+
+Examples (using the trees and functions defined in previous examples):
+
+  - tree_map tree2 add3;
+  val it = Node (Leaf 6,8,Leaf 6) : int tree
+  - tree_map tree4 sub4;
+  val it =
+  Node (Node (Leaf ~1,1,Leaf ~1),18,Node (Node (Leaf ~1,1,Leaf ~1),6,Leaf ~1))
+  : int tree
+  - tree_map tree4 (fn x => if x > 5 then true else false);
+  val it =
+    Node
+      (Node (Leaf false,false,Leaf false),true,
+       Node (Node (Leaf false,false,Leaf false),true,Leaf false)) : bool tree
